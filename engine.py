@@ -76,7 +76,7 @@ def latest_candidate(df, pair, stop_atr=1.5, reward_risk=2.0):
     risk = float(row.ATR) * float(stop_atr)
     stop = entry-risk if side == "BUY" else entry+risk
     target = entry+risk*float(reward_risk) if side == "BUY" else entry-risk*float(reward_risk)
-    tp1 = entry+risk if side == "BUY" else entry-risk; return {"side":side,"entry":entry,"stop":stop,"tp1":tp1,"target":target,"risk_distance":risk,"reason":"Baseline conditions met"}, "; ".join(evidence)
+    return {"side":side,"entry":entry,"stop":stop,"tp1":entry+risk if side == "BUY" else entry-risk,"target":target,"risk_distance":risk,"reason":"Baseline conditions met"}, "; ".join(evidence)
 
 def simulate(df, stop_atr=1.5, reward_risk=2.0, daily_limit_r=2.0,
              cooldown_losses=2, cooldown_bars=24):
