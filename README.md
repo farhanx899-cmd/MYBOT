@@ -73,3 +73,16 @@ No live or demo execution is implemented. Never commit API keys, broker credenti
 ## Open-source and development notes
 
 The repository is licensed under MIT. Do not include API keys, secrets, or account information in published files. Before expanding the trading scope, prioritize automated checks for indicators, stale data, stop/target ordering, and risk limits; a conservative event-driven backtest; out-of-sample evaluation; and a licensed, reliable news source. Any future broker adapter should be isolated and disabled by default, with persistent risk state, monitoring, alerts, and a manual kill switch.
+
+
+## Private Streamlit deployment
+
+The dashboard fails closed until Google OpenID Connect (OIDC) sign-in and an email allowlist are configured. It requires a verified Google email that exactly matches an address on the allowlist. The example at [.streamlit/secrets.toml.example](.streamlit/secrets.toml.example) contains placeholders only. Never commit the real .streamlit/secrets.toml file or paste credentials into GitHub.
+
+1. Create a Google OAuth web client. Set its authorized redirect URI to the exact Streamlit app URL followed by /oauth2callback. Generate a long random cookie secret.
+2. In Streamlit Community Cloud, create an app from repository farhanx899-cmd/MYBOT, branch codex/live-refresh-tradingview-dashboard-20261012, and entrypoint app.py. Pick the app URL before setting the OAuth redirect URI.
+3. In the deploy dialog's Advanced settings, enter the completed example as Streamlit secrets. Replace every placeholder and keep only your own verified Google email in [app_access].allowed_emails. The app shows no dashboard until all settings are valid.
+4. After the app is created, open its Share settings and choose “Only specific people can view this app” before sharing its URL. The in-app Google login and email allowlist remain enabled as additional access controls.
+5. Community Cloud watches the selected GitHub branch and applies later commits automatically. The feature-branch app is a preview while PR #2 remains open; merging the PR is a separate GitHub action.
+
+Community Cloud puts apps to sleep after 12 hours without traffic. A visit wakes an app, but this service does not promise continuous 24/7 uptime. The dashboard's 60-second to 5-minute refresh runs only while a browser session and app server are active. See [Community Cloud app hibernation](https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app) and [private app sharing](https://docs.streamlit.io/deploy/streamlit-community-cloud/share-your-app).
