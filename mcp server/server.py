@@ -145,7 +145,7 @@ def read_project_file(path: str) -> dict[str, Any]:
     if len(content.encode("utf-8")) > MAX_BYTES:
         raise ValueError("File exceeds size limit.")
     content = re.sub(
-        r"(?im)^(\s*(?:api[_-]?key|token|password|secret|authorization)\s*[:=]\s*).+$",
+        r"(?im)^\s*(?:export\s+)?([A-Za-z0-9_.-]*(?:api[_-]?key|token|password|secret|authorization)[A-Za-z0-9_.-]*\s*[:=]\s*).+$",
         r"\1[REDACTED]",
         content,
     )
