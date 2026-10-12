@@ -80,6 +80,64 @@ st.markdown(
 )
 
 
+def require_dashboard_access() -> None:
+    """Fail closed until Google OIDC and the email allowlist are configured."""
+    try:
+        auth_config = st.secrets["auth"]
+        access_config = st.secrets["app_access"]
+    except Exception:
+        st.error(
+            "Private sign-in is not configured. Add the required OIDC and "
+            "email allowlist settings to Streamlit secrets before using this dashboard."
+        )
+        st.stop()
+
+    required_auth_values = (
+        "redirect_uri",
+        "cookie_secret",
+        "client_id",
+        "client_secret",
+        "server_metadata_url",
+    )
+    if any(not auth_config.get(key) for key in required_auth_values):
+        st.error("Private sign-in is incomplete. Check the [auth] settings in Streamlit secrets.")
+        st.stop()
+
+    allowed_emails = access_config.get("allowed_emails")
+    if not isinstance(allowed_emails, list):
+        st.error("Private sign-in is incomplete. Configure [app_access].allowed_emails in Streamlit secrets.")
+        st.stop()
+    allowlist = {
+        address.strip().casefold()
+        for address in allowed_emails
+        if isinstance(address, str) and address.strip()
+    }
+    if not allowlist:
+        st.error("Private sign-in is disabled until at least one allowed email is configured.")
+        st.stop()
+
+    if not st.user.is_logged_in:
+        st.title("Forex Guardian")
+        st.subheader("Sign in to continue")
+        st.caption("This dashboard is restricted to the email addresses configured by its owner.")
+        st.button("Continue with Google", type="primary", on_click=st.login)
+        st.stop()
+
+    email = getattr(st.user, "email", "")
+    email_verified = getattr(st.user, "email_verified", False)
+    if (
+        not isinstance(email, str)
+        or email.strip().casefold() not in allowlist
+        or email_verified is not True
+    ):
+        st.error("This verified Google account is not authorized to view the dashboard.")
+        st.button("Sign out", on_click=st.logout)
+        st.stop()
+
+
+require_dashboard_access()
+
+
 @st.cache_data(ttl=60, show_spinner=False, max_entries=32)
 def load_market_snapshot(pair: str, period: str, interval: str) -> pd.DataFrame:
     prices = fetch_prices(pair, period, interval)
@@ -127,6 +185,7 @@ def tradingview_chart(pair: str, interval: str) -> None:
 with st.sidebar:
     st.markdown("## 🛡️ Forex Guardian")
     st.caption("Market intelligence · signals only")
+    st.button("Sign out", on_click=st.logout, use_container_width=True)
     st.divider()
     pair_label = st.selectbox("Market", list(PAIRS), index=0)
     pair = PAIRS[pair_label]["yahoo"]
