@@ -1,79 +1,45 @@
-# Forex Guardian AI (starter)
+# Forex Guardian AI
 
-An open-source, **signals-only** Forex research dashboard. It does not connect to a broker or place, modify, or close trades.
+A signals-only Forex research dashboard with an interactive TradingView chart, automatic refresh for open sessions, rule-based analysis, and illustrative stop-loss and take-profit levels. It does not connect to a broker or place, modify, or close trades.
 
-## Features
-- Streamlit dashboard for desktop/laptop.
-- OHLC data through `yfinance` for supported pairs.
-- EMA 50/200, RSI 14, ATR 14.
-- Simple swing-high/low and three-candle FVG heuristics.
-- Historical illustrative trade simulation with stop/target, daily loss limit, and cooldown.
-- Optional manual news-calendar CSV gate that fails closed if data is missing/stale/invalid.
+## What the dashboard includes
 
-## Important limitations
-- This is a prototype, not a validated profitable strategy or financial advice.
-- No automatic news scraping/feed is connected. Use only news/calendar data you are authorised to access.
-- Spot Forex has no single consolidated volume delta/order book. Delta/CVD/heatmaps require a separate suitable data source; this starter does not fabricate them.
-- ICT/SMC concepts are implemented only as simple heuristics, not a complete or authoritative ICT interpretation.
-- Yahoo Finance data may be delayed, incomplete, revised, or unavailable. Do not treat it as broker execution data.
-- Simulation assumptions are simplified. Spread/slippage values are examples, not live quotes. This backtest is not yet a robust research-grade event-driven simulator.
-- The daily-loss and cooldown controls in the backtest are illustrative. The current signal panel is not a persistent, 24/7 risk controller.
-- No live or demo order execution is implemented. Do not add broker credentials to this project.
+- Five supported pairs: GBP/USD, EUR/USD, USD/JPY, AUD/USD, and USD/CAD.
+- One-hour and daily analysis views with selectable history.
+- TradingView Advanced Chart widget, with pair and timeframe controls.
+- Rule-based BUY, SELL, or NO TRADE decisions with EMA trend, RSI, ATR, and evidence.
+- Adjustable ATR stop distance, TP1 at 1R, and TP2 at the selected reward/risk multiple.
+- Illustrative historical simulation with estimated trading costs, daily loss limits, and a cooldown after losses.
+- A manual high-impact-news gate that blocks signals when its calendar is unavailable, stale, invalid, or inside the event window.
+- Manual refresh and automatic refresh at a selectable interval while the dashboard session is open.
 
-## Run on Windows
-1. Install Python 3.11 or newer from https://www.python.org/downloads/ (tick **Add Python to PATH**).
-2. Extract this ZIP to a folder.
-3. Open PowerShell in that folder.
-4. Run:
+## Run locally
 
-```powershell
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
+Use Python 3.10 or newer. From the repository directory, install the dependencies and start the dashboard:
+
+```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-If PowerShell blocks activation, run the environment's Python directly:
+Then open the local address printed by Streamlit. On Windows, these same commands work in PowerShell when Python and pip are on PATH.
 
-```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m streamlit run app.py
-```
+## Refresh and availability
 
-Streamlit will print a local URL, usually http://localhost:8501. Open it in your browser.
+Automatic refresh reruns the dashboard for an active browser session. It does not keep a stopped computer, server, browser, or hosting service running. Continuous availability requires an independently operated host with monitoring and access controls. Do not publish this dashboard publicly without authentication. No hosting credentials, deployment, or public service are included in this repository change.
 
-## Run on macOS/Linux
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-streamlit run app.py
-```
+Price data for analysis is fetched through Yahoo Finance and cached briefly. The TradingView chart is an embedded third-party widget with its own market-data coverage and timing, so its candles or quotes may differ from the signal calculations.
 
-## News CSV
-Copy `news_events_template.csv` to `news_events.csv` and populate it only with events from a source whose terms permit your use. Required columns:
-- `time_utc`: ISO-8601 timestamp including UTC timezone, e.g. `2026-10-13T12:30:00Z`
-- `currency`: currency code, e.g. USD or GBP
-- `impact`: HIGH, MEDIUM, or LOW
-- `title`: event title
-- `updated_utc`: timestamp when you refreshed the calendar, with timezone
+## News calendar
 
-The filter blocks around matching high-impact events and blocks when the calendar is missing or stale. A manually maintained calendar is not a substitute for an automated, verified feed.
+Place the manually maintained news calendar at `news_events.csv` in the project directory, using the columns and timestamp format expected by the app. Keep the calendar current. If the file is missing or cannot be validated, the dashboard blocks a trade signal instead of assuming there is no event risk. This is not an automatic news feed.
 
-## Open-source repository
-This package is licensed under MIT. To publish it:
-1. Create a new repository on GitHub.
-2. Upload these files (do not upload API keys, secrets, or account information).
-3. Commit `README.md`, `LICENSE`, `requirements.txt`, `app.py`, `engine.py`, and the CSV template.
-4. Add issues/tests before accepting contributions.
+## How to interpret signals
 
-## Roadmap before considering any broker integration
-1. Automated tests for indicators, stale data, stop/target ordering, daily loss limits, and cooldown persistence.
-2. Proper event-driven backtest with bid/ask prices, spread, slippage, and conservative same-candle handling.
-3. Walk-forward and out-of-sample evaluation.
-4. Reliable licensed news/calendar data.
-5. Separate broker adapter and demo-only integration, independently disabled by default.
-6. Persistent risk state, heartbeat monitoring, alerting, and a hard manual kill switch.
+The rules use EMA 50/200 trend, RSI, ATR, and a moving-average crossover condition. Swing levels and fair-value-gap labels are descriptive heuristics, not standalone confirmations. A displayed stop or target is an estimate based on recent volatility and user-selected settings; it is not an order submitted to a broker. A BUY or SELL label is not a prediction or a recommendation.
 
-Do not switch to live execution without independent review and extensive demo testing. Even stop-loss orders cannot guarantee a fixed loss during gaps or slippage.
+The historical simulation is illustrative and simplified. It does not establish future performance, and its estimated costs, fills, slippage, and available market data may not match a live account. Spot Forex has no single consolidated order book or volume delta; the app does not fabricate CVD, heatmap, or order-flow data.
+
+## Safety and scope
+
+This project is a prototype for research and education, not financial advice. It has no broker integration or live-trading capability. Never put API keys, broker credentials, or access tokens in source files or commit them to GitHub.
