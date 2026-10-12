@@ -1,45 +1,75 @@
 # Forex Guardian AI
 
-A signals-only Forex research dashboard with an interactive TradingView chart, automatic refresh for open sessions, rule-based analysis, and illustrative stop-loss and take-profit levels. It does not connect to a broker or place, modify, or close trades.
+A signals-only Forex research dashboard with a TradingView chart, active-session refresh, transparent rule-based analysis, and illustrative stop-loss and take-profit levels. It does not connect to a broker or place, modify, or close trades.
 
-## What the dashboard includes
+## Dashboard features
 
 - Five supported pairs: GBP/USD, EUR/USD, USD/JPY, AUD/USD, and USD/CAD.
-- One-hour and daily analysis views with selectable history.
-- TradingView Advanced Chart widget, with pair and timeframe controls.
-- Rule-based BUY, SELL, or NO TRADE decisions with EMA trend, RSI, ATR, and evidence.
+- One-hour and daily analysis timeframes with selectable price history.
+- TradingView Advanced Chart widget with matching pair and timeframe selectors.
+- Rule-based BUY, SELL, or NO TRADE decision, with EMA trend, RSI, ATR, and supporting evidence.
 - Adjustable ATR stop distance, TP1 at 1R, and TP2 at the selected reward/risk multiple.
-- Illustrative historical simulation with estimated trading costs, daily loss limits, and a cooldown after losses.
-- A manual high-impact-news gate that blocks signals when its calendar is unavailable, stale, invalid, or inside the event window.
-- Manual refresh and automatic refresh at a selectable interval while the dashboard session is open.
+- Historical illustrative simulation with estimated costs, daily loss limit, and cooldown controls.
+- Manual high-impact-news calendar gate that blocks signals when the calendar is missing, stale, invalid, or inside the event window.
+- Manual refresh plus automatic refresh every 60 seconds, 2 minutes, or 5 minutes while the dashboard session is open.
 
-## Run locally
+## Run on Windows
 
-Use Python 3.10 or newer. From the repository directory, install the dependencies and start the dashboard:
+Install Python 3.11 or newer, then open PowerShell in the repository folder and run:
 
-```bash
+~~~powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 streamlit run app.py
-```
+~~~
 
-Then open the local address printed by Streamlit. On Windows, these same commands work in PowerShell when Python and pip are on PATH.
+If PowerShell blocks environment activation, run the environment's Python directly:
 
-## Refresh and availability
+~~~powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m streamlit run app.py
+~~~
 
-Automatic refresh reruns the dashboard for an active browser session. It does not keep a stopped computer, server, browser, or hosting service running. Continuous availability requires an independently operated host with monitoring and access controls. Do not publish this dashboard publicly without authentication. No hosting credentials, deployment, or public service are included in this repository change.
+## Run on macOS or Linux
 
-Price data for analysis is fetched through Yahoo Finance and cached briefly. The TradingView chart is an embedded third-party widget with its own market-data coverage and timing, so its candles or quotes may differ from the signal calculations.
+~~~bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+streamlit run app.py
+~~~
 
-## News calendar
+Streamlit prints the local address to open in your browser (usually http://localhost:8501).
 
-Place the manually maintained news calendar at `news_events.csv` in the project directory, using the columns and timestamp format expected by the app. Keep the calendar current. If the file is missing or cannot be validated, the dashboard blocks a trade signal instead of assuming there is no event risk. This is not an automatic news feed.
+## Refresh, data, and availability
 
-## How to interpret signals
+Auto-refresh reruns the dashboard for an active browser session while the app server is running. It does not keep a stopped computer, server, browser, or hosting service online. Continuous availability needs an independently operated host, monitoring, and access controls. Do not publish the dashboard publicly without authentication. This change does not deploy or configure hosting.
 
-The rules use EMA 50/200 trend, RSI, ATR, and a moving-average crossover condition. Swing levels and fair-value-gap labels are descriptive heuristics, not standalone confirmations. A displayed stop or target is an estimate based on recent volatility and user-selected settings; it is not an order submitted to a broker. A BUY or SELL label is not a prediction or a recommendation.
+Technical analysis candles are fetched from Yahoo Finance and cached briefly. The TradingView widget uses its own market data, coverage, and timing, so chart values can differ from the signal calculations. Yahoo Finance data can be delayed, incomplete, revised, or unavailable and is not broker execution data.
 
-The historical simulation is illustrative and simplified. It does not establish future performance, and its estimated costs, fills, slippage, and available market data may not match a live account. Spot Forex has no single consolidated order book or volume delta; the app does not fabricate CVD, heatmap, or order-flow data.
+## News calendar CSV
 
-## Safety and scope
+Copy news_events_template.csv to news_events.csv in the project folder. Populate it only with event data from a source whose terms permit your use, and update it regularly. Required columns:
 
-This project is a prototype for research and education, not financial advice. It has no broker integration or live-trading capability. Never put API keys, broker credentials, or access tokens in source files or commit them to GitHub.
+- time_utc: ISO-8601 event timestamp with a UTC timezone, such as 2026-10-13T12:30:00Z.
+- currency: currency code such as USD or GBP.
+- impact: HIGH, MEDIUM, or LOW.
+- title: event title.
+- updated_utc: timezone-aware timestamp for the calendar's last refresh.
+
+The gate blocks around matching high-impact events and blocks if the calendar is missing or stale. No automatic news scraping or feed is connected; a manually maintained calendar is not a verified feed.
+
+## Signal and simulation limitations
+
+Signals use EMA 50/200 trend, RSI 14, ATR 14, and a moving-average crossover condition. Swing levels and three-candle fair-value-gap labels are simple heuristics, not a complete or authoritative ICT/SMC interpretation. A BUY or SELL label is not a prediction or recommendation. Stop and target values are reference levels based on recent volatility and selected settings; they are not broker orders.
+
+This is a prototype for research and education, not financial advice or a validated profitable strategy. The historical simulation is simplified and not a research-grade event-driven backtest. Estimated spreads, slippage, fills, and available market data may not match real trading. Daily-loss and cooldown controls only apply inside the illustrative simulation; they are not a persistent, 24/7 risk controller. Spot Forex has no single consolidated volume delta, order book, or global liquidity heatmap, and this app does not fabricate CVD, heatmap, or order-flow data.
+
+No live or demo execution is implemented. Never commit API keys, broker credentials, or access tokens. Do not add live execution without independent review, extensive demo testing, persistent risk controls, and a hard manual kill switch. Stop-loss orders cannot guarantee a fixed loss during gaps or slippage.
+
+## Open-source and development notes
+
+The repository is licensed under MIT. Do not include API keys, secrets, or account information in published files. Before expanding the trading scope, prioritize automated checks for indicators, stale data, stop/target ordering, and risk limits; a conservative event-driven backtest; out-of-sample evaluation; and a licensed, reliable news source. Any future broker adapter should be isolated and disabled by default, with persistent risk state, monitoring, alerts, and a manual kill switch.
