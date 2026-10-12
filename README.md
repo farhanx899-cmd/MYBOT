@@ -1,79 +1,88 @@
-# Forex Guardian AI (starter)
+# Forex Guardian AI
 
-An open-source, **signals-only** Forex research dashboard. It does not connect to a broker or place, modify, or close trades.
+A signals-only Forex research dashboard with a TradingView chart, active-session refresh, transparent rule-based analysis, and illustrative stop-loss and take-profit levels. It does not connect to a broker or place, modify, or close trades.
 
-## Features
-- Streamlit dashboard for desktop/laptop.
-- OHLC data through `yfinance` for supported pairs.
-- EMA 50/200, RSI 14, ATR 14.
-- Simple swing-high/low and three-candle FVG heuristics.
-- Historical illustrative trade simulation with stop/target, daily loss limit, and cooldown.
-- Optional manual news-calendar CSV gate that fails closed if data is missing/stale/invalid.
+## Dashboard features
 
-## Important limitations
-- This is a prototype, not a validated profitable strategy or financial advice.
-- No automatic news scraping/feed is connected. Use only news/calendar data you are authorised to access.
-- Spot Forex has no single consolidated volume delta/order book. Delta/CVD/heatmaps require a separate suitable data source; this starter does not fabricate them.
-- ICT/SMC concepts are implemented only as simple heuristics, not a complete or authoritative ICT interpretation.
-- Yahoo Finance data may be delayed, incomplete, revised, or unavailable. Do not treat it as broker execution data.
-- Simulation assumptions are simplified. Spread/slippage values are examples, not live quotes. This backtest is not yet a robust research-grade event-driven simulator.
-- The daily-loss and cooldown controls in the backtest are illustrative. The current signal panel is not a persistent, 24/7 risk controller.
-- No live or demo order execution is implemented. Do not add broker credentials to this project.
+- Five supported pairs: GBP/USD, EUR/USD, USD/JPY, AUD/USD, and USD/CAD.
+- One-hour and daily analysis timeframes with selectable price history.
+- TradingView Advanced Chart widget with matching pair and timeframe selectors.
+- Rule-based BUY, SELL, or NO TRADE decision, with EMA trend, RSI, ATR, and supporting evidence.
+- Adjustable ATR stop distance, TP1 at 1R, and TP2 at the selected reward/risk multiple.
+- Historical illustrative simulation with estimated costs, daily loss limit, and cooldown controls.
+- Manual high-impact-news calendar gate that blocks signals when the calendar is missing, stale, invalid, or inside the event window.
+- Manual refresh plus automatic refresh every 60 seconds, 2 minutes, or 5 minutes while the dashboard session is open.
 
 ## Run on Windows
-1. Install Python 3.11 or newer from https://www.python.org/downloads/ (tick **Add Python to PATH**).
-2. Extract this ZIP to a folder.
-3. Open PowerShell in that folder.
-4. Run:
 
-```powershell
+Install Python 3.11 or newer, then open PowerShell in the repository folder and run:
+
+~~~powershell
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 streamlit run app.py
-```
+~~~
 
-If PowerShell blocks activation, run the environment's Python directly:
+If PowerShell blocks environment activation, run the environment's Python directly:
 
-```powershell
+~~~powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe -m streamlit run app.py
-```
+~~~
 
-Streamlit will print a local URL, usually http://localhost:8501. Open it in your browser.
+## Run on macOS or Linux
 
-## Run on macOS/Linux
-```bash
+~~~bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 streamlit run app.py
-```
+~~~
 
-## News CSV
-Copy `news_events_template.csv` to `news_events.csv` and populate it only with events from a source whose terms permit your use. Required columns:
-- `time_utc`: ISO-8601 timestamp including UTC timezone, e.g. `2026-10-13T12:30:00Z`
-- `currency`: currency code, e.g. USD or GBP
-- `impact`: HIGH, MEDIUM, or LOW
-- `title`: event title
-- `updated_utc`: timestamp when you refreshed the calendar, with timezone
+Streamlit prints the local address to open in your browser (usually http://localhost:8501).
 
-The filter blocks around matching high-impact events and blocks when the calendar is missing or stale. A manually maintained calendar is not a substitute for an automated, verified feed.
+## Refresh, data, and availability
 
-## Open-source repository
-This package is licensed under MIT. To publish it:
-1. Create a new repository on GitHub.
-2. Upload these files (do not upload API keys, secrets, or account information).
-3. Commit `README.md`, `LICENSE`, `requirements.txt`, `app.py`, `engine.py`, and the CSV template.
-4. Add issues/tests before accepting contributions.
+Auto-refresh reruns the dashboard for an active browser session while the app server is running. It does not keep a stopped computer, server, browser, or hosting service online. Continuous availability needs an independently operated host, monitoring, and access controls. Do not publish the dashboard publicly without authentication. This change does not deploy or configure hosting.
 
-## Roadmap before considering any broker integration
-1. Automated tests for indicators, stale data, stop/target ordering, daily loss limits, and cooldown persistence.
-2. Proper event-driven backtest with bid/ask prices, spread, slippage, and conservative same-candle handling.
-3. Walk-forward and out-of-sample evaluation.
-4. Reliable licensed news/calendar data.
-5. Separate broker adapter and demo-only integration, independently disabled by default.
-6. Persistent risk state, heartbeat monitoring, alerting, and a hard manual kill switch.
+Technical analysis candles are fetched from Yahoo Finance and cached briefly. The TradingView widget uses its own market data, coverage, and timing, so chart values can differ from the signal calculations. Yahoo Finance data can be delayed, incomplete, revised, or unavailable and is not broker execution data.
 
-Do not switch to live execution without independent review and extensive demo testing. Even stop-loss orders cannot guarantee a fixed loss during gaps or slippage.
+## News calendar CSV
+
+Copy news_events_template.csv to news_events.csv in the project folder. Populate it only with event data from a source whose terms permit your use, and update it regularly. Required columns:
+
+- time_utc: ISO-8601 event timestamp with a UTC timezone, such as 2026-10-13T12:30:00Z.
+- currency: currency code such as USD or GBP.
+- impact: HIGH, MEDIUM, or LOW.
+- title: event title.
+- updated_utc: timezone-aware timestamp for the calendar's last refresh.
+
+The gate blocks around matching high-impact events and blocks if the calendar is missing or stale. No automatic news scraping or feed is connected; a manually maintained calendar is not a verified feed.
+
+## Signal and simulation limitations
+
+Signals use EMA 50/200 trend, RSI 14, ATR 14, and a moving-average crossover condition. Swing levels and three-candle fair-value-gap labels are simple heuristics, not a complete or authoritative ICT/SMC interpretation. A BUY or SELL label is not a prediction or recommendation. Stop and target values are reference levels based on recent volatility and selected settings; they are not broker orders.
+
+This is a prototype for research and education, not financial advice or a validated profitable strategy. The historical simulation is simplified and not a research-grade event-driven backtest. Estimated spreads, slippage, fills, and available market data may not match real trading. Daily-loss and cooldown controls only apply inside the illustrative simulation; they are not a persistent, 24/7 risk controller. Spot Forex has no single consolidated volume delta, order book, or global liquidity heatmap, and this app does not fabricate CVD, heatmap, or order-flow data.
+
+No live or demo execution is implemented. Never commit API keys, broker credentials, or access tokens. Do not add live execution without independent review, extensive demo testing, persistent risk controls, and a hard manual kill switch. Stop-loss orders cannot guarantee a fixed loss during gaps or slippage.
+
+## Open-source and development notes
+
+The repository is licensed under MIT. Do not include API keys, secrets, or account information in published files. Before expanding the trading scope, prioritize automated checks for indicators, stale data, stop/target ordering, and risk limits; a conservative event-driven backtest; out-of-sample evaluation; and a licensed, reliable news source. Any future broker adapter should be isolated and disabled by default, with persistent risk state, monitoring, alerts, and a manual kill switch.
+
+
+## Private Streamlit deployment
+
+The dashboard fails closed until Google OpenID Connect (OIDC) sign-in and an email allowlist are configured. It requires a verified Google email that exactly matches an address on the allowlist. The example at [.streamlit/secrets.toml.example](.streamlit/secrets.toml.example) contains placeholders only. Never commit the real .streamlit/secrets.toml file or paste credentials into GitHub.
+
+1. Create a Google OAuth web client. Set its authorized redirect URI to the exact Streamlit app URL followed by /oauth2callback. Generate a long random cookie secret.
+2. In Streamlit Community Cloud, create an app from repository farhanx899-cmd/MYBOT, branch codex/live-refresh-tradingview-dashboard-20261012, and entrypoint app.py. Pick the app URL before setting the OAuth redirect URI.
+3. In the deploy dialog's Advanced settings, enter the completed example as Streamlit secrets. Replace every placeholder and keep only your own verified Google email in [app_access].allowed_emails. The app shows no dashboard until all settings are valid.
+4. After the app is created, open its Share settings and choose “Only specific people can view this app” before sharing its URL. The in-app Google login and email allowlist remain enabled as additional access controls.
+5. Community Cloud watches the selected GitHub branch and applies later commits automatically. The feature-branch app is a preview while PR #2 remains open; merging the PR is a separate GitHub action.
+
+Community Cloud puts apps to sleep after 12 hours without traffic. A visit wakes an app, but this service does not promise continuous 24/7 uptime. The dashboard's 60-second to 5-minute refresh runs only while a browser session and app server are active. See [Community Cloud app hibernation](https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app) and [private app sharing](https://docs.streamlit.io/deploy/streamlit-community-cloud/share-your-app).

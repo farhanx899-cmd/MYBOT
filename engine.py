@@ -60,7 +60,7 @@ def build_features(df, stop_atr=1.5, reward_risk=2.0):
     x["bear_fvg"] = h < l.shift(2)
     return x
 
-def latest_candidate(df, pair):
+def latest_candidate(df, pair, stop_atr=1.5, reward_risk=2.0):
     row = df.iloc[-1]
     evidence = []
     if not np.isfinite(row["ATR"]) or not np.isfinite(row["RSI"]):
@@ -73,10 +73,10 @@ def latest_candidate(df, pair):
     if side is None:
         return {"side":"NO TRADE","reason":"Entry rules not satisfied"}, "; ".join(evidence)
     entry = float(row.Close)
-    risk = float(row.ATR) * 1.5
+    risk = float(row.ATR) * float(stop_atr)
     stop = entry-risk if side == "BUY" else entry+risk
-    target = entry+risk*2 if side == "BUY" else entry-risk*2
-    return {"side":side,"entry":entry,"stop":stop,"target":target,"reason":"Baseline conditions met"}, "; ".join(evidence)
+    target = entry+risk*float(reward_risk) if side == "BUY" else entry-risk*float(reward_risk)
+    return {"side":side,"entry":entry,"stop":stop,"tp1":entry+risk if side == "BUY" else entry-risk,"target":target,"risk_distance":risk,"reason":"Baseline conditions met"}, "; ".join(evidence)
 
 def simulate(df, stop_atr=1.5, reward_risk=2.0, daily_limit_r=2.0,
              cooldown_losses=2, cooldown_bars=24):
